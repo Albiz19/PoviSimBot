@@ -4,7 +4,7 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
-import ru.Albiz19.PoviSimBot2021.Bot;
+import ru.Albiz19.PoviSimBot2021.func.Bot;
 
 public class Main {
     public static void main(String[] args) throws TelegramApiException {
@@ -18,6 +18,5 @@ public class Main {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-        Bot bot = new Bot();
     }
 }
