@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import ru.Albiz19.PoviSimBot2021.res.Login;
 import ru.Albiz19.PoviSimBot2021.res.Stickers;
 
@@ -35,15 +36,16 @@ public class Bot extends TelegramLongPollingBot {
 
 
     public String input(String msg, SendMessage sendMessage){ //Обработка обычного ввода
+        msg = msg.toUpperCase();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(false);
         keyboard.clear();
         keyboardFirstRow.clear();
         keyboardSecondRow.clear();
-        if (msg.equals("Привет")){ //Обработка приветствия
+        if (msg.equals("ПРИВЕТ") || (msg.equals("/START"))){ //Обработка приветствия
             sendSticker = Stickers.OOGWAY_HELLO.getSendSticker(chatId);
-            sendMessage.setText("Привет! Я - бот ПовиCим. Сыграем в виселицу");
+            sendMessage.setText("Привет! Я - бот ПовиCим. Сыграем в виселицу?");
             try {
                 execute(sendMessage);
                 execute(sendSticker);
@@ -58,14 +60,13 @@ public class Bot extends TelegramLongPollingBot {
             replyKeyboardMarkup.setKeyboard(keyboard); //Установливаем список нашей клавиатуре
             return "Ожидаю выбор...";
         }
-        if (msg.equals("Давай сыграем!")){
+        if (msg.equals("ДАВАЙ СЫГРАЕМ!")){
             gamemode = true;
             hangman = new Hangman();
             System.out.println("StartGame event triggered");
             return "Начали. Я загадал слово: " + hangman.getLetters() + " Твоя буква?";
-            //тут будет метод, реализующий начало игры
         }
-        if (msg.equals("Напомнишь правила?")){
+        if (msg.equals("НАПОМНИШЬ ПРАВИЛА?")){
             System.out.println("Rules event triggered");
             sendMessage.setText("Все очень просто. Я загадываю слово, а ты пытаешься его отгадать. " +
                     "Каждый ход ты пишешь букву, и, если она присутствует в загаданном слове, я ее открываю. Если " +
@@ -86,7 +87,15 @@ public class Bot extends TelegramLongPollingBot {
             //тут будет метод, реализующий игру
             return "Начнем?";
         }
-        return msg;
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+        keyboard.clear();
+        keyboardFirstRow.clear();
+        keyboardSecondRow.clear();
+        keyboardFirstRow.add(new KeyboardButton("Давай сыграем!")); //Первая кнопка в первую строку клавитуры
+        keyboardSecondRow.add(new KeyboardButton("Напомнишь правила?")); //Добавление второй кнопки во вторую строчку клавы
+        return "'" + msg + "' не является командой! Воспользуйтесь доступными командами для взаимодействия.";
     }
     public String inGameInput(String msg, SendMessage sendMessage){ //Обработка сообщений после перехода в игровой режим
         replyKeyboardMarkup.setSelective(true);
@@ -95,22 +104,30 @@ public class Bot extends TelegramLongPollingBot {
         keyboard.clear();
         keyboardFirstRow.clear();
         msg = msg.toUpperCase();
+
         if (msg.length() > 1 || ((msg.charAt(0) < 'А') || (msg.charAt(0) > 'Я'))){ //Проверка неправильного ввода
-            keyboardFirstRow.add(new KeyboardButton("Я передумал играть. Верни меня в меню."));
-            keyboard.add(keyboardFirstRow);
-            replyKeyboardMarkup.setKeyboard(keyboard);
             System.out.print("UserInput: " + msg);
-            if (msg.equals("Я ПЕРЕДУМАЛ ИГРАТЬ. ВЕРНИ МЕНЯ В МЕНЮ.")){
-                System.out.println("GameExit event triggered");
+            if (msg.equals("Я ПЕРЕДУМАЛ ИГРАТЬ. ВЕРНИ МЕНЯ В МЕНЮ.")) {
+                keyboardFirstRow.add(new KeyboardButton("Давай сыграем!")); //Первая кнопка в первую строку клавитуры
+                keyboardSecondRow.add(new KeyboardButton("Напомнишь правила?")); //Добавление второй кнопки во вторую строчку клавы
+                keyboard.add(keyboardFirstRow);
+                keyboard.add(keyboardSecondRow);
+                System.out.println(" GameExit event triggered");
                 gamemode = false;
-                    sendSticker= Stickers.OOGWAY_BYE.getSendSticker(chatId);
-                    try {
-                        execute(sendSticker);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
-                return "Как скажешь. Дай знать, если захочешь сыграть.";
+                sendSticker= Stickers.OOGWAY_BYE.getSendSticker(chatId);
+                try {
+                    execute(sendSticker);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                return "Как скажешь. Дай знать если захочешь сыграть.";
             }
+            else {
+                keyboardFirstRow.add(new KeyboardButton("Я передумал играть. Верни меня в меню."));
+                keyboard.add(keyboardFirstRow);
+            }
+
+            // replyKeyboardMarkup.setKeyboard(keyboard);
             return "Упс! Это не буква! Для действий во время игры рекомендую использовать команды.";
         }
         char message = msg.charAt(0);
@@ -142,6 +159,14 @@ public class Bot extends TelegramLongPollingBot {
                     }
                     break;
                 }
+                case 2: {
+                    sendSticker = Stickers.OOGWAY_ERROREQUAL2.getSendSticker(chatId);
+                    try{
+                        execute(sendSticker);
+                    } catch (TelegramApiException e){
+                        e.printStackTrace();
+                    }
+                }
                 case 3: {
                     sendSticker = Stickers.OOGWAY_ERROREQUAL3.getSendSticker(chatId);
                     try {
@@ -150,6 +175,22 @@ public class Bot extends TelegramLongPollingBot {
                         e.printStackTrace();
                     }
                     break;
+                }
+                case 4:{
+                    sendSticker = Stickers.OOGWAY_ERROREQUAL4.getSendSticker(chatId);
+                    try{
+                        execute(sendSticker);
+                    }catch (TelegramApiException e){
+                        e.printStackTrace();
+                    }
+                }
+                case 5:{
+                    sendSticker = Stickers.OOGWAY_ERROREQUAL5.getSendSticker(chatId);
+                    try{
+                        execute(sendSticker);
+                    } catch (TelegramApiException e){
+                        e.printStackTrace();
+                    }
                 }
             }
 
