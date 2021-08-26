@@ -136,7 +136,7 @@ public class Bot extends TelegramLongPollingBot {
         return "@PoviSimBOT";
     }
     public String getBotToken() {
-        return "1660604096:AAEdACbnuJUEa5vAP29W12rZosFPO1-aP2s";
+        return "";
     }
     public void onUpdateReceived(Update update) {
         update.getUpdateId();
